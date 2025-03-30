@@ -1,6 +1,5 @@
 import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material"
 import { useState } from "react";
-import UpdateStudent from "../Modals/UpdateStudent/UpdateStudent";
 import DelStudent from "../Modals/DeleteStudent/DelStudent";
 import instance from "../../Service/AxiosOrder";
 
