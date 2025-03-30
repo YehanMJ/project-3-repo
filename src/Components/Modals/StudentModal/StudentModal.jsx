@@ -1,38 +1,88 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, Modal, TextField, Typography, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import instance from "../../../Service/AxiosOrder";
 
-export default function AddStudent({ open, handleClose}) {
-    const [sName,setSName] = useState('')
-    const [sAge,setSAge] = useState('')
-    const [sAddress,setSAddress] = useState('')
-    const [sContact,setSContact] = useState('')
-    const handleSave = ()=>{
-        instance.post('/student/save', {
-            student_name: sName,
-            student_age: sAge,
-            student_address: sAddress,
-            student_contact: sContact
-        })
-        .then((response) => {
-            if (response.status === 200) {
-                window.alert("Student has been successfully saved!");
-                handleClose();
-            } else {
-                throw new Error("Failed to add student");
-            }
-        })
-        .catch((error) => {
-            window.alert(`Error: ${error.message}`);
-        });
-    }
+export default function StudentModal({ open, handleClose, mode, studentData, fetchStudents }) {
+    const [sName, setSName] = useState("");
+    const [sAge, setSAge] = useState("");
+    const [sAddress, setSAddress] = useState("");
+    const [sContact, setSContact] = useState("");
+
+    useEffect(() => {
+        if (mode === "update" && studentData) {
+            setSName(studentData.student_name || "");
+            setSAge(studentData.student_age || "");
+            setSAddress(studentData.student_address || "");
+            setSContact(studentData.student_contact || "");
+        } else if (mode === "add") {
+            setSName("");
+            setSAge("");
+            setSAddress("");
+            setSContact("");
+        }
+    }, [mode, studentData]);
+
+    useEffect(() => {
+        if (!open) {
+            setSName("");
+            setSAge("");
+            setSAddress("");
+            setSContact("");
+        }
+    }, [open]);
+
+    const handleSaveOrUpdate = () => {
+        if (mode === "add") {
+            instance
+                .post("/student/save", {
+                    student_name: sName,
+                    student_age: sAge,
+                    student_address: sAddress,
+                    student_contact: sContact,
+                })
+                .then((response) => {
+                    if (response.status === 200) {
+                        window.alert("Student has been successfully added!");
+                        fetchStudents();
+                        handleClose();
+                    } else {
+                        throw new Error("Failed to add student");
+                    }
+                })
+                .catch((error) => {
+                    window.alert(`Error: ${error.message}`);
+                });
+        } else if (mode === "update") {
+            // Update student logic
+            instance
+                .put(`/student/update/${studentData.id}`, {
+                    student_name: sName,
+                    student_age: sAge,
+                    student_address: sAddress,
+                    student_contact: sContact,
+                })
+                .then((response) => {
+                    if (response.status === 200) {
+                        window.alert("Student has been successfully updated!");
+                        fetchStudents(); // Refresh the student list
+                        handleClose(); // Close the modal
+                    } else {
+                        throw new Error("Failed to update student");
+                    }
+                })
+                .catch((error) => {
+                    window.alert(`Error: ${error.message}`);
+                });
+        }
+    };
+
     return (
         <Modal
             open={open}
             onClose={handleClose}
-            aria-labelledby="add-student-modal-title"
-            aria-describedby="add-student-modal-description"
+            aria-labelledby="student-modal-title"
+            aria-describedby="student-modal-description"
         >
             <Box
                 sx={{
@@ -57,7 +107,7 @@ export default function AddStudent({ open, handleClose}) {
                     }}
                 >
                     <Typography
-                        id="add-student-modal-title"
+                        id="student-modal-title"
                         variant="h6"
                         sx={{
                             fontWeight: "bold",
@@ -66,7 +116,7 @@ export default function AddStudent({ open, handleClose}) {
                             color: "black",
                         }}
                     >
-                        ADD STUDENT
+                        {mode === "add" ? "ADD STUDENT" : "UPDATE STUDENT"}
                     </Typography>
                     <IconButton onClick={handleClose}>
                         <CloseIcon />
@@ -86,7 +136,7 @@ export default function AddStudent({ open, handleClose}) {
                         label="Name"
                         variant="outlined"
                         value={sName}
-                        onChange={(e) => {setSName(e.target.value)}}
+                        onChange={(e) => setSName(e.target.value)}
                         fullWidth
                         sx={{
                             "& .MuiOutlinedInput-root": {
@@ -99,7 +149,7 @@ export default function AddStudent({ open, handleClose}) {
                         label="Address"
                         variant="outlined"
                         value={sAddress}
-                        onChange={(e) => {setSAddress(e.target.value)}}
+                        onChange={(e) => setSAddress(e.target.value)}
                         fullWidth
                         sx={{
                             "& .MuiOutlinedInput-root": {
@@ -112,7 +162,7 @@ export default function AddStudent({ open, handleClose}) {
                         label="Age"
                         variant="outlined"
                         value={sAge}
-                        onChange={(e) => {setSAge(e.target.value)}}
+                        onChange={(e) => setSAge(e.target.value)}
                         fullWidth
                         sx={{
                             "& .MuiOutlinedInput-root": {
@@ -125,7 +175,7 @@ export default function AddStudent({ open, handleClose}) {
                         label="Contact"
                         variant="outlined"
                         value={sContact}
-                        onChange={(e) => {setSContact(e.target.value)}}
+                        onChange={(e) => setSContact(e.target.value)}
                         fullWidth
                         sx={{
                             "& .MuiOutlinedInput-root": {
@@ -136,7 +186,7 @@ export default function AddStudent({ open, handleClose}) {
                     />
                 </Box>
 
-                {/* Save Button */}
+                {/* Save/Update Button */}
                 <Box
                     sx={{
                         display: "flex",
@@ -144,7 +194,7 @@ export default function AddStudent({ open, handleClose}) {
                     }}
                 >
                     <Button
-                        onClick={handleSave}
+                        onClick={handleSaveOrUpdate}
                         variant="contained"
                         sx={{
                             backgroundColor: "#F2BA1D",
@@ -159,7 +209,7 @@ export default function AddStudent({ open, handleClose}) {
                             },
                         }}
                     >
-                        SAVE
+                        {mode === "add" ? "SAVE" : "UPDATE"}
                     </Button>
                 </Box>
             </Box>

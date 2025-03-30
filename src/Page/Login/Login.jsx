@@ -15,7 +15,7 @@ import Button from '@mui/material/Button';
 import SaveIcon from '@mui/icons-material/Save';
 import GoogleIcon from '@mui/icons-material/Google';
 // import instance from '../../Service/AxiosOrder';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import coverImage from "../../assets/backgroundImage.png";
 import "@fontsource/bebas-neue";
 import Toggle from '../../Common/Components/Toggle/Toggle';
@@ -30,7 +30,6 @@ export default function Login() {
     const [password, setPassword] = React.useState('');
     const [confirmPassword, setConfirmPassword] = React.useState(''); // For register form
     const [toggleValue, setToggleValue] = React.useState('login');
-    const navigate = useNavigate();
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -38,9 +37,6 @@ export default function Login() {
         event.preventDefault();
     };
 
-    const handleMouseUpPassword = (event) => {
-        event.preventDefault();
-    };
     const handleToggleChange = (event, newValue) => {
         if (newValue !== null) {
             setToggleValue(newValue);

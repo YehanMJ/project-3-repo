@@ -1,25 +1,39 @@
 import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material"
 import { useState } from "react";
 import UpdateStudent from "../Modals/UpdateStudent/UpdateStudent";
+import DelStudent from "../Modals/DeleteStudent/DelStudent";
+import instance from "../../Service/AxiosOrder";
 
-export default function TableS(props) {
-    const [students, setStudents] = [props.students]
-    const [openUpdate, setOpenUpdate] = useState(false);
-    const [selectedStudent, setSelectedStudent] = useState(null);
+export default function TableS({ students, fetchStudents, handleEditStudent }) {
+    const [openDelete, setOpenDelete] = useState(false);
+    const [studentToDelete, setStudentToDelete] = useState(null);
 
-    const handleEdit = (student) => {
-        setSelectedStudent(student); // Set the selected student data
-        setOpenUpdate(true); // Open the Update modal
-    };
-    const handleCloseUpdate = () => {
-        setOpenUpdate(false); // Close the Update modal
-        setSelectedStudent(null); // Clear the selected student data
+    const handleDeleteClick = (studentId) => {
+        setStudentToDelete(studentId); // Set the student ID to delete
+        setOpenDelete(true); // Open the Delete modal
     };
 
-    const handleUpdateSuccess = () => {
-        console.log("Student updated successfully!");
-        // Refresh the student list or perform other actions
-        setOpenUpdate(false);
+    const handleCloseDelete = () => {
+        setOpenDelete(false); // Close the Delete modal
+        setStudentToDelete(null); // Clear the student ID
+    };
+
+    const handleDeleteConfirm = () => {
+        instance
+            .delete(`/student/delete/${studentToDelete}`)
+            .then((response) => {
+                if (response.status === 200) {
+                    console.log("Student deleted successfully!");
+                    fetchStudents(); // Refresh the student list
+                    setOpenDelete(false); // Close the Delete modal
+                    setStudentToDelete(null); // Clear the student ID
+                } else {
+                    console.error("Failed to delete student");
+                }
+            })
+            .catch((error) => {
+                console.error("Error deleting student:", error.message);
+            });
     };
     return (
         <>
@@ -108,7 +122,7 @@ export default function TableS(props) {
                                         color="primary"
                                         size="small"
                                         sx={{ marginRight: '10px' }}
-                                        onClick={() => handleEdit(student)}
+                                        onClick={() => handleEditStudent(student)}
                                     >
                                         Edit
                                     </Button>
@@ -116,7 +130,7 @@ export default function TableS(props) {
                                         variant="outlined"
                                         color="error"
                                         size="small"
-                                        onClick={() => handleDelete(student.id)}
+                                        onClick={() => handleDeleteClick(student.id)}
                                     >
                                         Delete
                                     </Button>
@@ -126,12 +140,12 @@ export default function TableS(props) {
                     </TableBody>
                 </Table>
             </TableContainer>
-            {selectedStudent && (
-                <UpdateStudent
-                    open={openUpdate}
-                    handleClose={handleCloseUpdate}
-                    studentData={selectedStudent}
-                    handleUpdateSuccess={handleUpdateSuccess}
+
+            {openDelete && (
+                <DelStudent
+                    open={openDelete}
+                    handleClose={handleCloseDelete}
+                    handleDelete={handleDeleteConfirm}
                 />
             )}
         </>

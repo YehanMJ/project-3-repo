@@ -2,43 +2,55 @@ import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableH
 import { useEffect, useState } from "react";
 import instance from "../../Service/AxiosOrder";
 import TableS from "../../Components/TableS/TableS";
-import AddStudent from "../../Components/Modals/AddStudent/AddStudent";
+import StudentModal from "../../Components/Modals/StudentModal/StudentModal";
 
 export default function Students() {
     const [students, setStudents] = useState([]);
-    const [openAdd, setOpenAdd] = useState(false);
+    const [openModal, setOpenModal] = useState(false);
+    const [modalMode, setModalMode] = useState("add"); // "add" or "update"
+    const [selectedStudent, setSelectedStudent] = useState(null);
 
-    
-    useEffect(() => {
-        instance.get("/student/getAll")
+
+
+    const fetchStudents = () => {
+        instance
+            .get("/student/getAll")
             .then((response) => {
-                setStudents(response.data); // Assuming the response contains the data
-                console.log(response.data); // Log the data for debugging
+                setStudents(response.data);
+                console.log(response.data); 
             })
             .catch((error) => {
                 console.error("Error fetching students:", error);
             });
-    }, []); // Empty dependency array to run only once on component mount
-
-    const handleEdit = (id) => {
-        console.log("Edit student with ID:", id);
-        // Add your edit logic here
     };
 
-    const handleDelete = (id) => {
-        console.log("Delete student with ID:", id);
-        // Add your delete logic here
-    };
+    useEffect(() => {
+        fetchStudents();
+    }, []);
 
     const handleLogout = () => {
-        console.log("Log Out button clicked");
-        // Add your logout logic here
+        localStorage.removeItem("token");
+        window.location.reload();
     };
-    const handleAddStudent = () => setOpenAdd(true);
-    const handleCloseADD = () => setOpenAdd(false);
+    const handleAddStudent = () => {
+        setModalMode("add");
+        setSelectedStudent(null);
+        setOpenModal(true);
+    };
 
-    
-    
+    const handleEditStudent = (student) => {
+        setModalMode("update");
+        setSelectedStudent(student);
+        setOpenModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setOpenModal(false);
+        setSelectedStudent(null);
+    };
+
+
+
     return (
         <Box
             sx={{
@@ -71,7 +83,7 @@ export default function Students() {
                 >
                     My Student
                 </Typography>
-                <Button 
+                <Button
                     variant="contained"
                     color="primary"
                     onClick={handleAddStudent}
@@ -81,7 +93,7 @@ export default function Students() {
                 </Button>
             </Box>
 
-            <TableS students={students}/>
+            <TableS students={students} fetchStudents={fetchStudents} handleEditStudent={handleEditStudent} />
 
             {/* Bottom Section */}
             <Button
@@ -96,8 +108,14 @@ export default function Students() {
             >
                 Log Out
             </Button>
-            <AddStudent open={openAdd} handleClose={handleCloseADD} />
-            
+            <StudentModal
+                open={openModal}
+                handleClose={handleCloseModal}
+                mode={modalMode}
+                studentData={selectedStudent}
+                fetchStudents={fetchStudents}
+            />
+
         </Box>
     );
 }
