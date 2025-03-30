@@ -81,7 +81,7 @@ export default function Login() {
                 console.log(response)
                 const token = response.data?.token;
                 localStorage.setItem('token', token);
-                // window.location.reload();
+                window.location.reload();
             })
             .catch(function (error) {
                 console.log(error);
